@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <sched.h>
+#include <time.h>
 
 void interrupt(struct process *p)
 {

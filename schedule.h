@@ -1,14 +1,18 @@
 #define FIFO    0
-#define RR  1
-#define SJF 2
+#define RR      1
+#define SJF     2
 #define PSJF    3
 
-#define MAX_WAITING_NUM 2048
+#define MAX_WAITING_NUM 8192
+
+#define unit() {for(volatile unsigned long i=0;i<1000000UL;i++);}
+#define period(t) {for(int j=0;j<t;j++){unit();}}
 
 struct process{
-    pid_t pid;
-    char[32] process_id;
+    pid_t pid; // -1 means haven't fork yet
+    char name[32];
     int left_time, counter;
+    struct timespec start, end;
 }
 
 struct waiting_task{

@@ -1,9 +1,11 @@
+#include "schedule.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
 int policy;
+
 int main(int argc, char const *argv[])
 {
     // determine policy type
@@ -22,27 +24,29 @@ int main(int argc, char const *argv[])
     }
 
     // get number of processes
-    int n, current=0;
+    int n;
     scanf("%d", &n);
     // get each line
-    char name[32];
-    int ready_time, total_time;
+    struct waiting_task task[MAX_WAITING_NUM];
+    int current_task=0; // which task is waiting
+    struct process P[MAX_WAITING_NUM];
     for(int i=0;i<n;i++){
-        scanf("%s%d%d", name, &ready_time, &total_time);
+        task[i].p=&P[i];
+        scanf("%s%d%d", P[i].name, &task[i].ready_time, &P[i].left_time);
         // put the things into the waiting queue
     }
+    // sort ready time
 
+    int next_ready_time;
     // run!
-    while(current<n){
-        // check the next time need to fork
-        int next_fork_time;
+    while(current_task<n){
+        // determine next ready time
+
         // wait until the next for time
-        for(int k=0;k<next_fork_time;k++)
-            for(volatile unsigned long i=0;i<1000000UL;i++);
+        period(next_ready_time);
         // fork
 
     }
-
 
     return 0;
 }
