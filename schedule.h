@@ -11,7 +11,7 @@
 typedef struct process{
     pid_t pid; // -1 means haven't fork yet
     char name[32];
-    int left_time, counter;
+    int left_time, counter; // counter specifies the order of the process in FIFO and RR
     struct timespec start, end;
 }process_t;
 
