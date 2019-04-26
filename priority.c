@@ -6,7 +6,7 @@ int priority(process_t *proc0, process_t *proc1){
 	}else if(policy==FIFO){
 		return proc0->id - proc1->id;
 	}else{ // RR
-		return;
+		return 0;
 	}
 }
 
