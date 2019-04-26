@@ -28,25 +28,42 @@ int main(int argc, char const *argv[])
     scanf("%d", &n);
     // get each line
     struct waiting_task task[MAX_WAITING_NUM];
-    int current_task=0; // which task is waiting
     struct process P[MAX_WAITING_NUM];
+
     for(int i=0;i<n;i++){
         task[i].p=&P[i];
         scanf("%s%d%d", P[i].name, &task[i].ready_time, &P[i].left_time);
         // put the things into the waiting queue
-    }
-    // sort ready time
 
-    int next_ready_time;
+    }
+
     // run!
+	int current_task=0; // which task is waiting
+	int now=0; // the current time unit
+	int next_ready_time;
     while(current_task<n){
-        // determine next ready time
+		
+		while(current_task<n && task[current_task].ready_time == now){
+			// fork and mmap , a child can know where it is with current task
+			
+			// assign pid and counter to process, and throw the struct process P into heap
 
-        // wait until the next for time
-        period(next_ready_time);
-        // fork
+			current_task++;
+		}
+
+		if(current_task==n){ // then there is nothing need to fork
+			break;
+		}else{
+			// detemine next ready time
+			next_ready_time = task[current_task].ready_time - now;
+        	// wait until the next for time
+        	period(next_ready_time);
+			// renew now
+			now = task[current_task];
+		}
 
     }
+	// wait child
 
     return 0;
 }
