@@ -8,36 +8,37 @@
 #define unit() {for(volatile unsigned long i=0;i<1000000UL;i++);}
 #define period(t) {for(int j=0;j<t;j++){unit();}}
 
-struct process{
+typedef struct process{
     pid_t pid; // -1 means haven't fork yet
     char name[32];
     int left_time, counter;
     struct timespec start, end;
-}
+}process_t;
 
-struct waiting_task{
+typedef struct waiting_task{
     int ready_time;
     struct process *p;
-}
+}waiting_task_t;
+
+typedef struct heap{
+    struct process *data;
+    int heap_len, heap_size;
+    int (*priority)(struct process *, struct process *);
+}heap_t;
 
 // functions for heap
-void heap_insert(struct process *p);
 
-struct process* heap_extract_min(void);
+heap_t *heap_create(int (*priority)(process_t *, process_t *));
 
-struct process* heap_peek_min(void);
+void insert(heap_t *heap, process_t *process);
 
-int heap_isempty(void);
+process_t extract_min(heap_t *heap);
 
-//functions for queue
-void queue_enqueue(struct process *p);
+process_t peek(heap_t *heap); 
 
-struct process* queue_dequeue(void);
+int isempty(heap_t *heap);
 
-struct process* queue_peek(void);
-
-int queue_isempty(void);
-
+int priority(process_t *proc0, process_t *proc1);
 
 //other funtions
 
