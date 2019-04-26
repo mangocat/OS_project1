@@ -88,11 +88,7 @@ void interrupt(struct process *p)
         perror("interrupt error");
     }
 
-    if(!(policy & 2)){
-        queue_enqueue(p);
-    }else{
-        heap_insert(p);
-    }
+    heap_insert(p);
 
     return;
 }
