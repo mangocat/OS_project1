@@ -38,6 +38,8 @@ process_t peek(heap_t *heap);
 
 int isempty(heap_t *heap);
 
+int priority(process_t *proc0, process_t *proc1);
+
 //other funtions
 
 void interrupt(struct process *p);
