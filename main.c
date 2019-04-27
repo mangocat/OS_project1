@@ -48,6 +48,7 @@ int main(int argc, char const *argv[])
         perror(0);
         exit(1);
     }
+    proc_assign_cpu(getpid(),0);
 	// determine policy type
 	char type[8];
 	scanf("%s", type);

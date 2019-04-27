@@ -144,7 +144,8 @@ void exec_process(struct process *p){
             exit(0);
         }
         else{ // parent process
-           wakeup_process(p); 
+           proc_assign_cpu(p->pid,1);
+           /* wakeup_process(p);  */
         }
     }
     else{ //just set to high priority
@@ -161,4 +162,22 @@ void interrupt(heap_t *heap, struct process *p)
     heap_insert(heap, p);
 
     return;
+}
+int proc_assign_cpu(int pid, int core)
+{
+	if (core > sizeof(cpu_set_t)) {
+		fprintf(stderr, "Core index error.");
+		return -1;
+	}
+
+	cpu_set_t mask;
+	CPU_ZERO(&mask);
+	CPU_SET(core, &mask);
+
+	if (sched_setaffinity(pid, sizeof(mask), &mask) < 0) {
+		perror("sched_setaffinity");
+		exit(1);
+	}
+
+	return 0;
 }
