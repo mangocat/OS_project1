@@ -1,3 +1,4 @@
+#define _GNU_SOURCE
 #include "schedule.h"
 #include <stdio.h>
 #include <errno.h>
@@ -20,7 +21,7 @@ heap_t *heap_create(int (*priority)(process_t *, process_t *)){
 	return heap;
 }
 
-void insert(heap_t *heap, process_t *process) {
+void heap_insert(heap_t *heap, process_t *process) {
 	/* dynamic array */
 	if (heap->heap_len + 1 >= heap->heap_size) {
 		heap->heap_size = heap->heap_size ? heap->heap_size * 2 : 8;
@@ -38,7 +39,7 @@ void insert(heap_t *heap, process_t *process) {
 	heap->heap_len++;
 }
 
-process_t extract_min(heap_t *heap) {
+process_t heap_extract_min(heap_t *heap) {
 	assert(heap->heap_len != 0);
 	process_t data = heap->data[0];
 
@@ -67,7 +68,7 @@ process_t extract_min(heap_t *heap) {
 	return data;
 }
 
-process_t peek(heap_t *heap) {
+process_t heap_peek(heap_t *heap) {
 	assert(heap->heap_len == 0);
 	return heap->data[0];
 }
@@ -79,6 +80,7 @@ int fifo_pri(process_t *proc0, process_t *proc1) {
 	return proc0->ready_time - proc1->ready_time;
 }
 int rr_pri(process_t *proc0, process_t *proc1) {
+	return proc1->exec_count - proc0->exec_count;
 }
 int sjf_pri(process_t *proc0, process_t *proc1) {
 	return proc0->exec_time - proc1->exec_time;
@@ -126,7 +128,7 @@ void exec_process(struct process *p){
         wakeup_process(p);
     }
 }
-void interrupt(struct process *p)
+void interrupt(heap_t *heap, struct process *p)
 {
     struct sched_param para;
     para.sched_priority = 0;
@@ -136,7 +138,7 @@ void interrupt(struct process *p)
     }
     //remeber to change counter or left_time before insert
 
-    heap_insert(p);
+    heap_insert(heap, p);
 
     return;
 }
