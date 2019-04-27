@@ -49,6 +49,9 @@ int main(int argc, char const *argv[])
 		insert(task_heap, &P[i]);
     }
 
+	while (!empty())
+
+#ifdef COMMENT
     // run!
 	int current_task = 0; // which task is waiting
 	int now = 0; // the current time unit
@@ -98,6 +101,7 @@ task[current_task].p->pid = pid;
 
     }
 	// wait child
+#endif
 
     return 0;
 }
