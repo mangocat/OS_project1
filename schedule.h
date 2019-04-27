@@ -31,7 +31,7 @@ typedef struct waiting_task{
 } waiting_task_t;
 
 typedef struct heap{
-    struct process *data;
+    struct process **data;
     int heap_len, heap_size;
     int (*priority)(struct process *, struct process *);
 } heap_t;
@@ -42,9 +42,9 @@ heap_t *heap_create(int (*priority)(process_t *, process_t *));
 
 void heap_insert(heap_t *heap, process_t *process);
 
-process_t heap_extract_min(heap_t *heap);
+process_t *heap_extract_min(heap_t *heap);
 
-process_t heap_peek(heap_t *heap); 
+process_t *heap_peek(heap_t *heap); 
 
 int isempty(heap_t *heap);
 
