@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 int main(void){
     /* heap_t *FIFO_test,*RR_test,*SJF_test,*PSJF_test; */
     /* FIFO_test = heap_create(fifo_pri); */
@@ -47,7 +48,10 @@ int main(void){
         heap_insert(task_heap,&P[i]);
 	}
     for(int i=0; i<n; i++){
+        process_t *tmp=heap_peek(task_heap);
         process_t *ptr=heap_extract_min(task_heap);
+        assert(tmp==ptr);
+        printf("empty?  %d\n",isempty(task_heap));
         printf("name=%s exec_time=%d counter=%lld left_time=%d\n",ptr->name,
                 ptr->exec_time,ptr->counter,ptr->left_time);
     }

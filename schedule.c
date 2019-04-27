@@ -71,7 +71,7 @@ process_t *heap_extract_min(heap_t *heap) {
 }
 
 process_t *heap_peek(heap_t *heap) {
-	assert(heap->heap_len == 0);
+	assert(heap->heap_len != 0);
 	return heap->data[0];
 }
 
@@ -80,17 +80,17 @@ int isempty(heap_t *heap) {
 }
 int fifo_pri(process_t *proc0, process_t *proc1) {
 	/* return proc0->ready_time - proc1->ready_time; */
-    return proc0->counter - proc1->counter;
+    return proc1->counter - proc0->counter;
 }
 int rr_pri(process_t *proc0, process_t *proc1) {
 	/* return proc1->exec_count - proc0->exec_count; */
-    return proc0->counter - proc1->counter;
+    return proc1->counter - proc0->counter;
 }
 int sjf_pri(process_t *proc0, process_t *proc1) {
-	return proc0->exec_time - proc1->exec_time;
+	return proc1->exec_time - proc0->exec_time;
 }
 int psjf_pri(process_t *proc0, process_t *proc1) {
-	return proc0->left_time - proc1->left_time;
+	return proc1->left_time - proc0->left_time;
 }
 
 int block_process(struct process *p){
