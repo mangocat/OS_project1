@@ -21,7 +21,7 @@ typedef struct process{
     int left_time;
 	int exec_time;
 	int counter;
-    struct timespec start, end;
+    struct timespec start, end, *ptr;
 } process_t;
 
 typedef struct waiting_task{

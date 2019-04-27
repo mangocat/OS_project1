@@ -3,7 +3,12 @@
 #include <errno.h>
 #include <sched.h>
 #include <time.h>
+#include <stdlib.h>
 #include <assert.h>
+#include <sys/wait.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 heap_t *heap_create(int (*priority)(process_t *, process_t *)){
 	heap_t *heap = (heap_t *)malloc(sizeof(heap_t));
@@ -78,15 +83,54 @@ int priority(process_t *proc0, process_t *proc1){
 		return proc0->counter - proc1->counter;
 	}
 }
-
+int wakeup_process(struct process *p){
+    struct sched_param para;
+    para.sched_priority = 0;
+    int ret = sched_setscheduler(p->pid,SCHED_OTHER,&para);
+    if(ret<0){
+        perror("sched_setscheduler with OTHER error!");
+        return -1;
+    }
+    return ret;
+}
+void child_running(struct process *p){
+    period(p->left_time);
+    clock_gettime(CLOCK_REALTIME,p->ptr);
+    // died , p->ptr store end time
+}
+void exec_process(struct process *p){
+    if(p->pid==-1){ // the process haven't been forked
+        // need to get the time process start running
+        clock_gettime(CLOCK_REALTIME,&p->start);
+        p->ptr = (struct timespec*)mmap(NULL,sizeof(struct timespec),PROT_READ|PROT_WRITE,
+                MAP_SHARED|MAP_ANONYMOUS,-1,0);
+        // p->ptr is used for record child end time in child process
+        p->pid = fork();
+        if(p->pid<0){
+            perror("Failed when fork()!");
+        }
+        else if(p->pid==0){
+            // child process
+            child_running(p);
+            exit(0);
+        }
+        else{ // parent process
+           wakeup_process(p); 
+        }
+    }
+    else{ //just set to high priority
+        wakeup_process(p);
+    }
+}
 void interrupt(struct process *p)
 {
     struct sched_param para;
     para.sched_priority = 0;
 
-    if((sched_setscheduler(p->pid, SCHED_IDLE, para)) < 0){
+    if((sched_setscheduler(p->pid, SCHED_IDLE, &para)) < 0){
         perror("interrupt error");
     }
+    //remeber to change counter or left_time before insert
 
     heap_insert(p);
 
