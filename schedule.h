@@ -1,3 +1,9 @@
+#ifndef SCHEDULE_H
+#define SCHEDULE_H
+
+#include <unistd.h>
+#include <time.h>
+
 #define FIFO    0
 #define RR      1
 #define SJF     2
@@ -11,14 +17,17 @@
 typedef struct process{
     pid_t pid; // -1 means haven't fork yet
     char name[32];
-    int left_time, counter; // counter specifies the order of the process in FIFO and RR
+	int ready_time;
+    int left_time;
+	int exec_time;
+	int counter;
     struct timespec start, end;
-}process_t;
+} process_t;
 
 typedef struct waiting_task{
     int ready_time;
     struct process *p;
-}waiting_task_t;
+} waiting_task_t;
 
 typedef struct heap{
     struct process *data;
@@ -40,6 +49,19 @@ int isempty(heap_t *heap);
 
 int priority(process_t *proc0, process_t *proc1);
 
+/* The four scheduling algorithm */
+int fifo_pri(process_t *proc0, process_t *proc1) {
+}
+int rr_pri(process_t *proc0, process_t *proc1) {
+}
+int sjf_pri(process_t *proc0, process_t *proc1) {
+}
+int psjf_pri(process_t *proc0, process_t *proc1) {
+}
+
+
 //other funtions
 
 void interrupt(struct process *p);
+
+#endif
