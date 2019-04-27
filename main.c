@@ -1,4 +1,6 @@
-#define _GNU_SOURCE
+#ifndef _GNU_SOURCE
+    #define _GNU_SOURCE
+#endif
 #include "schedule.h"
 
 #include <sched.h>
@@ -8,7 +10,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-int policy;
+extern int policy;
 
 int main(int argc, char const *argv[])
 {
@@ -65,7 +67,8 @@ int main(int argc, char const *argv[])
 			task[current_task].p->pid = -1;
 			task[current_task].p->counter = main_counter;
 			insert(task_heap, task[current_task].p);
-			
+
+#ifdef Z	
 			pid_t pid = fork();
 			// get start time
 			if(pid == 0){ // child
@@ -79,8 +82,9 @@ int main(int argc, char const *argv[])
 				// mmap
 				exit(0);
 			}
+#endif
 			// assign pid and counter to process, and throw the struct process P into heap
-task[current_task].p->pid = pid;
+            task[current_task].p->pid = pid;
 			task[current_task].p->counter = current_task;
 			
 			insert(task_heap, task[current_task].p);
