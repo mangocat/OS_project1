@@ -20,6 +20,7 @@ typedef struct process{
 	int ready_time;
     int left_time;
 	int exec_time;
+	int exec_count
 	int counter;
     struct timespec start, end, *ptr;
 } process_t;
@@ -33,7 +34,7 @@ typedef struct heap{
     struct process *data;
     int heap_len, heap_size;
     int (*priority)(struct process *, struct process *);
-}heap_t;
+} heap_t;
 
 // functions for heap
 
@@ -50,14 +51,10 @@ int isempty(heap_t *heap);
 int priority(process_t *proc0, process_t *proc1);
 
 /* The four scheduling algorithm */
-int fifo_pri(process_t *proc0, process_t *proc1) {
-}
-int rr_pri(process_t *proc0, process_t *proc1) {
-}
-int sjf_pri(process_t *proc0, process_t *proc1) {
-}
-int psjf_pri(process_t *proc0, process_t *proc1) {
-}
+int fifo_pri(process_t *proc0, process_t *proc1);
+int rr_pri(process_t *proc0, process_t *proc1);
+int sjf_pri(process_t *proc0, process_t *proc1);
+int psjf_pri(process_t *proc0, process_t *proc1);
 
 
 //other funtions

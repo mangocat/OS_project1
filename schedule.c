@@ -79,6 +79,7 @@ int fifo_pri(process_t *proc0, process_t *proc1) {
 	return proc0->ready_time - proc1->ready_time;
 }
 int rr_pri(process_t *proc0, process_t *proc1) {
+	return proc1->exec_count - proc2->exec_count;
 }
 int sjf_pri(process_t *proc0, process_t *proc1) {
 	return proc0->exec_time - proc1->exec_time;
