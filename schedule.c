@@ -79,10 +79,12 @@ int isempty(heap_t *heap) {
 	return heap->heap_len == 0;
 }
 int fifo_pri(process_t *proc0, process_t *proc1) {
-	return proc0->ready_time - proc1->ready_time;
+	/* return proc0->ready_time - proc1->ready_time; */
+    return proc0->counter - proc1->counter;
 }
 int rr_pri(process_t *proc0, process_t *proc1) {
-	return proc1->exec_count - proc0->exec_count;
+	/* return proc1->exec_count - proc0->exec_count; */
+    return proc0->counter - proc1->counter;
 }
 int sjf_pri(process_t *proc0, process_t *proc1) {
 	return proc0->exec_time - proc1->exec_time;
