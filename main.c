@@ -1,22 +1,46 @@
 #ifndef _GNU_SOURCE
-    #define _GNU_SOURCE
+#define _GNU_SOURCE
 #endif
 #include "schedule.h"
-
+#include <signal.h>
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
-
+#include <errno.h>
+#include <sys/wait.h>
 extern int policy;
 int busy = 0;//1 means that a process is running
 struct process* cur_p=NULL;// the process which is running
+heap_t *task_heap;
+void handle_sigchld(int sig) {
+    int saved_errno = errno;
+    cur_p->end = *(cur_p->ptr);
+    //run next process, now busy==1
+    if(isempty(task_heap)==0){// is not empty
+          cur_p = heap_extract_min(task_heap); 
+          exec_process(cur_p);
+    }
+    else{
+        busy = 0;
+        cur_p = NULL;
+    }
+    while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {}
+    errno = saved_errno;
+}
 int main(int argc, char const *argv[])
 {
+    struct sigaction sa;
+    sa.sa_handler = &handle_sigchld;
+    sigemptyset(&sa.sa_mask);
+    sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+    if (sigaction(SIGCHLD, &sa, 0) == -1) {
+        perror(0);
+        exit(1);
+    }
 	// determine policy type
-	heap_t *task_heap;
 	char type[8];
 	scanf("%s", type);
 	if(type[0]=='F'){ // FIFO
@@ -118,6 +142,7 @@ int main(int argc, char const *argv[])
 
 	}
 	// wait child
+    while(waitpid((pid_t)-1,NULL,0)>0){}
 
 	return 0;
 }
