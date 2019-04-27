@@ -11,12 +11,18 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <sys/wait.h>
-extern int policy;
+#define TIME
+int policy;
 int busy = 0;//1 means that a process is running
 struct process* cur_p=NULL;// the process which is running
 heap_t *task_heap;
+int order[MAX_WAITING_NUM];
 void handle_sigchld(int sig) {
     int saved_errno = errno;
+    static int cnt = 0; 
+    printf("cnt=%d %s\n",cnt,cur_p->name);
+    order[cnt] = cur_p->id;
+    cnt++;
     cur_p->end = *(cur_p->ptr);
     //run next process, now busy==1
     if(isempty(task_heap)==0){// is not empty
@@ -36,7 +42,9 @@ int main(int argc, char const *argv[])
     sa.sa_handler = &handle_sigchld;
     sigemptyset(&sa.sa_mask);
     sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+    /* sa.sa_flags = 0; */
     if (sigaction(SIGCHLD, &sa, 0) == -1) {
+    /* if (sigaction(SIGUSR1, &sa, 0) == -1) { */
         perror(0);
         exit(1);
     }
@@ -72,6 +80,7 @@ int main(int argc, char const *argv[])
 		scanf("%s%d%d", P[i].name, &P[i].ready_time, &P[i].left_time);
 		task[i].ready_time = P[i].ready_time;
         task[i].p = &P[i];
+        P[i].id = i;
 		P[i].exec_time = P[i].left_time;
 		P[i].exec_count = 0;
         P[i].counter = 0;
@@ -94,11 +103,12 @@ int main(int argc, char const *argv[])
             main_counter++;
 			//insert(task_heap, task[current_task].p);
 
-			heap_insert(task_heap, task[current_task].p);
+			//heap_insert(task_heap, task[current_task].p);
             exec_process(task[current_task].p);
             // use sigpromask to avoid race condition, wait..... not needed
             if(busy==1){
                 block_process(task[current_task].p);
+			    heap_insert(task_heap, task[current_task].p);
             }
             else{
                 busy = 1;
@@ -145,6 +155,14 @@ int main(int argc, char const *argv[])
 	}
 	// wait child
     while(waitpid((pid_t)-1,NULL,0)>0){}
+#ifdef TIME
+    for(int i=0; i<n; i++){
+        int idx = order[i];
+        printf("%s start=%09ld.%09ld end=%09ld.%09ld\n",P[idx].name,P[idx].start.tv_sec,
+                P[idx].start.tv_nsec,P[idx].end.tv_sec,P[idx].end.tv_nsec);
+    }
+    
+#endif
 
 	return 0;
 }

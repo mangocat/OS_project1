@@ -8,6 +8,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <signal.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
 #include <unistd.h>
@@ -98,7 +99,7 @@ int block_process(struct process *p){
     para.sched_priority = 0;
     int ret = sched_setscheduler(p->pid,SCHED_IDLE,&para);
     if(ret<0){
-        perror("sched_setscheduler with OTHER error!");
+        perror("sched_setscheduler with IDLE error!");
         return -1;
     }
     return ret;
@@ -117,6 +118,7 @@ int wakeup_process(struct process *p){
 void child_running(struct process *p){
     period(p->left_time);
     clock_gettime(CLOCK_REALTIME,p->ptr);
+    /* kill(getppid(),SIGUSR1); */
     // died , p->ptr store end time
 }
 void exec_process(struct process *p){

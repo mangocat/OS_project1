@@ -21,6 +21,7 @@ typedef struct process{
     int left_time;
 	int exec_time;
 	int exec_count;// the number that a process executes
+    int id; //index of P[]
 	long long int counter; //used for FIFO,RR, avoid overflow
     struct timespec start, end, *ptr;
 } process_t;
