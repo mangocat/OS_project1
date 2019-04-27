@@ -20,8 +20,8 @@ typedef struct process{
 	int ready_time;
     int left_time;
 	int exec_time;
-	int exec_count;
-	int counter;
+	int exec_count;// the number that a process executes
+	long long int counter; //used for FIFO,RR, avoid overflow
     struct timespec start, end, *ptr;
 } process_t;
 
@@ -60,5 +60,7 @@ int psjf_pri(process_t *proc0, process_t *proc1);
 //other funtions
 
 void interrupt(heap_t *heap, struct process *p);
+void exec_process(struct process *p);
+int block_process(struct process *p);
 
 #endif

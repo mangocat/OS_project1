@@ -1,4 +1,6 @@
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include "schedule.h"
 #include <stdio.h>
 #include <errno.h>
@@ -25,7 +27,7 @@ void heap_insert(heap_t *heap, process_t *process) {
 	/* dynamic array */
 	if (heap->heap_len + 1 >= heap->heap_size) {
 		heap->heap_size = heap->heap_size ? heap->heap_size * 2 : 8;
-		heap->data = realloc(heap->data, sizeof(process_t *) * heap->heap_size);
+		heap->data = (process_t**)realloc(heap->data, sizeof(process_t *) * heap->heap_size);
 	}
 	
 	int i = heap->heap_len;
@@ -46,7 +48,7 @@ process_t *heap_extract_min(heap_t *heap) {
 	heap->data[0] = heap->data[heap->heap_len - 1];
 	heap->heap_len--;
 
-	int i = 0, j, k;
+	int i = 0;
 	while (i < heap->heap_len) {
 		int left = i * 2 + 1;
 		int right = i * 2 + 2;
@@ -89,6 +91,17 @@ int psjf_pri(process_t *proc0, process_t *proc1) {
 	return proc0->left_time - proc1->left_time;
 }
 
+int block_process(struct process *p){
+    struct sched_param para;
+    para.sched_priority = 0;
+    int ret = sched_setscheduler(p->pid,SCHED_IDLE,&para);
+    if(ret<0){
+        perror("sched_setscheduler with OTHER error!");
+        return -1;
+    }
+    return ret;
+    
+}
 int wakeup_process(struct process *p){
     struct sched_param para;
     para.sched_priority = 0;
@@ -105,6 +118,12 @@ void child_running(struct process *p){
     // died , p->ptr store end time
 }
 void exec_process(struct process *p){
+    /* static long long cnt=0; */
+    /* if(type[0]=='R'||type[0]=='F'){ */
+        /* p->counter = cnt; */
+    /* } */
+    /* cnt++; */
+
     if(p->pid==-1){ // the process haven't been forked
         // need to get the time process start running
         clock_gettime(CLOCK_REALTIME,&p->start);
@@ -130,10 +149,7 @@ void exec_process(struct process *p){
 }
 void interrupt(heap_t *heap, struct process *p)
 {
-    struct sched_param para;
-    para.sched_priority = 0;
-
-    if((sched_setscheduler(p->pid, SCHED_IDLE, &para)) < 0){
+    if(block_process(p)<0){
         perror("interrupt error");
     }
     //remeber to change counter or left_time before insert

@@ -11,7 +11,8 @@
 #include <sys/types.h>
 
 extern int policy;
-
+int busy = 0;//1 means that a process is running
+struct process* cur_p=NULL;// the process which is running
 int main(int argc, char const *argv[])
 {
 	// determine policy type
@@ -48,6 +49,7 @@ int main(int argc, char const *argv[])
 		task[i].ready_time = P[i].ready_time;
 		P[i].exec_time = P[i].ready_time;
 		P[i].exec_count = 0;
+        P[i].pid = -1;
 		heap_insert(task_heap, &P[i]);
 	}
 
@@ -55,7 +57,7 @@ int main(int argc, char const *argv[])
 	int current_task = 0; // which task is waiting
 	int now = 0; // the current time unit
 	int next_ready_time;
-	int main_counter = 0;
+    long long main_counter = 0;
 
 	while(current_task<n){
 
@@ -63,10 +65,22 @@ int main(int argc, char const *argv[])
 			// fork and mmap , a child can know where it is with current task
 			task[current_task].p->pid = -1;
 			task[current_task].p->counter = main_counter;
+            main_counter++;
 			//insert(task_heap, task[current_task].p);
 
-#ifdef Z	
 			heap_insert(task_heap, task[current_task].p);
+            exec_process(task[current_task].p);
+            // use sigpromask to avoid race condition, wait..... not needed
+            if(busy==1){
+                block_process(task[current_task].p);
+            }
+            else{
+                busy = 1;
+                cur_p = task[current_task].p;
+            }
+            // consider interrupt case
+
+#ifdef Z	
 
 			pid_t pid = fork();
 			// get start time
@@ -81,12 +95,12 @@ int main(int argc, char const *argv[])
 				// mmap
 				exit(0);
 			}
-#endif
 			// assign pid and counter to process, and throw the struct process P into heap
             task[current_task].p->pid = pid;
 			task[current_task].p->counter = current_task;
 
 			heap_insert(task_heap, task[current_task].p);
+#endif
 
 			current_task++;
 		}
