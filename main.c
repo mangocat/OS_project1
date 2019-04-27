@@ -63,14 +63,11 @@ int main(int argc, char const *argv[])
 			// fork and mmap , a child can know where it is with current task
 			task[current_task].p->pid = -1;
 			task[current_task].p->counter = main_counter;
-<<<<<<< HEAD
-			insert(task_heap, task[current_task].p);
+			//insert(task_heap, task[current_task].p);
 
 #ifdef Z	
-=======
 			heap_insert(task_heap, task[current_task].p);
 
->>>>>>> 688234e7ef7f030aa9172b49db3e6c3adc06de83
 			pid_t pid = fork();
 			// get start time
 			if(pid == 0){ // child
@@ -86,11 +83,7 @@ int main(int argc, char const *argv[])
 			}
 #endif
 			// assign pid and counter to process, and throw the struct process P into heap
-<<<<<<< HEAD
             task[current_task].p->pid = pid;
-=======
-			task[current_task].p->pid = pid;
->>>>>>> 688234e7ef7f030aa9172b49db3e6c3adc06de83
 			task[current_task].p->counter = current_task;
 
 			heap_insert(task_heap, task[current_task].p);
