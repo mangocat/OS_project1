@@ -72,8 +72,9 @@ int main(int argc, char const *argv[])
 		scanf("%s%d%d", P[i].name, &P[i].ready_time, &P[i].left_time);
 		task[i].ready_time = P[i].ready_time;
         task[i].p = &P[i];
-		P[i].exec_time = P[i].ready_time;
+		P[i].exec_time = P[i].left_time;
 		P[i].exec_count = 0;
+        P[i].counter = 0;
         P[i].pid = -1;
 		/* heap_insert(task_heap, &P[i]); */
 	}

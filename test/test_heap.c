@@ -1,4 +1,4 @@
-#include "schedule.h"
+#include "../schedule.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -39,11 +39,18 @@ int main(void){
 	for(int i=0;i<n;i++){
 		scanf("%s%d%d", P[i].name, &P[i].ready_time, &P[i].left_time);
 		task[i].ready_time = P[i].ready_time;
-		P[i].exec_time = P[i].ready_time;
+		P[i].exec_time = P[i].left_time;
 		P[i].exec_count = 0;
+        P[i].counter = i;
         P[i].pid = -1;
-		heap_insert(task_heap, &P[i]);
+        task[i].p = &P[i];
+        heap_insert(task_heap,&P[i]);
 	}
+    for(int i=0; i<n; i++){
+        process_t *ptr=heap_extract_min(task_heap);
+        printf("name=%s exec_time=%d counter=%lld left_time=%d\n",ptr->name,
+                ptr->exec_time,ptr->counter,ptr->left_time);
+    }
 
     return 0;
 }
