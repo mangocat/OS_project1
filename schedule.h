@@ -20,7 +20,7 @@ typedef struct process{
 	int ready_time;
     int left_time;
 	int exec_time;
-	int exec_count
+	int exec_count;
 	int counter;
     struct timespec start, end, *ptr;
 } process_t;
@@ -40,11 +40,11 @@ typedef struct heap{
 
 heap_t *heap_create(int (*priority)(process_t *, process_t *));
 
-void insert(heap_t *heap, process_t *process);
+void heap_insert(heap_t *heap, process_t *process);
 
-process_t extract_min(heap_t *heap);
+process_t heap_extract_min(heap_t *heap);
 
-process_t peek(heap_t *heap); 
+process_t heap_peek(heap_t *heap); 
 
 int isempty(heap_t *heap);
 
@@ -59,6 +59,6 @@ int psjf_pri(process_t *proc0, process_t *proc1);
 
 //other funtions
 
-void interrupt(struct process *p);
+void interrupt(heap_t *heap, struct process *p);
 
 #endif
