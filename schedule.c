@@ -137,6 +137,7 @@ void child_running(struct process *p){
     if(sigaction(SIGUSR2,&cont,NULL)<0){
         perror("failed when sigaction SIGUSR2!");
     }
+    sigprocmask(SIG_SETMASK,0,NULL);
     period(p->left_time);
     clock_gettime(CLOCK_REALTIME,p->ptr);
     printf("(in child)%s end=%09ld.%09ld\n",p->name,p->ptr->tv_sec,p->ptr->tv_nsec);
@@ -150,6 +151,11 @@ void exec_process(struct process *p){
         p->ptr = (struct timespec*)mmap(NULL,sizeof(struct timespec),PROT_READ|PROT_WRITE,
                 MAP_SHARED|MAP_ANONYMOUS,-1,0);
         // p->ptr is used for record child end time in child process
+        sigset_t new,old;
+        sigemptyset(&new);
+        sigaddset(&new,SIGUSR1);
+        sigaddset(&new,SIGUSR2);
+        sigprocmask(SIG_BLOCK,&new,&old);
         p->pid = fork();
         if(p->pid<0){
             perror("Failed when fork()!");
