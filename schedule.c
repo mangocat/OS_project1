@@ -167,7 +167,7 @@ void exec_process(struct process *p){
         }
         else{ // parent process
            proc_assign_cpu(p->pid,1);
-           /* wakeup_process(p);  */
+           wakeup_process(p); 
         }
     }
     else{ //just set to high priority
