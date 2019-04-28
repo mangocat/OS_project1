@@ -35,7 +35,7 @@ void handle_sigchld(int sig) {
         busy = 0;
         cur_p = NULL;
     }
-    /* while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {} */
+    while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {}
     errno = saved_errno;
 }
 int main(int argc, char const *argv[])
@@ -113,16 +113,17 @@ int main(int argc, char const *argv[])
 			task[current_task].p->pid = -1;
 			task[current_task].p->counter = main_counter;
             main_counter++;
+            clock_gettime(CLOCK_REALTIME,&task[current_task].p->start);
 			//insert(task_heap, task[current_task].p);
 
 			//heap_insert(task_heap, task[current_task].p);
-            exec_process(task[current_task].p);
             // use sigpromask to avoid race condition, wait..... not needed
             if(busy==1){
-                block_process(task[current_task].p);
+                /* block_process(task[current_task].p); */
 			    heap_insert(task_heap, task[current_task].p);
             }
             else{
+                exec_process(task[current_task].p);
                 busy = 1;
                 cur_p = task[current_task].p;
             }
