@@ -158,7 +158,7 @@ int main(int argc, char const *argv[])
 	// if policy is RR, then we might need to keep interrupt process
 	if(policy == RR && !isempty(task_heap)){ // if there are still some process need to run
 		if(next_rr_time==-1){
-			pause(); // wait until gets SIGCHLD
+			period(cur_p->left_time - now); // wait until gets SIGCHLD
 		}else{
 			// let the current process run 500 units
 			period(next_rr_time - now);
@@ -169,7 +169,7 @@ int main(int argc, char const *argv[])
 		}
 		while(!isempty(task_heap)){
 			if(cur_p->left_time <= 500){
-				pause(); // wait until gets SIGCHLD
+				period(cur_p->left_time); // wait until gets SIGCHLD
 			}else{
 				period(500);
 				// interrupt it
