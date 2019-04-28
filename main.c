@@ -169,7 +169,7 @@ int main(int argc, char const *argv[])
 			exec_process(cur_p);
 		}
 		while(!isempty(task_heap)){
-			if(cur_p->left_time < 500){
+			if(cur_p->left_time <= 500){
 				pause(); // wait until gets SIGCHLD
 			}else{
 				period(500);
