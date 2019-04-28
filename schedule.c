@@ -49,13 +49,6 @@ process_t *heap_extract_min(heap_t *heap) {
 	assert(heap->heap_len != 0);
 	process_t *data = heap->data[0];
 
-    if(policy == RR){
-        if(data->left_time < 500){
-            next_rr_time = now + 500;
-        }else{
-            next_rr_time = -1;
-        }
-    }
 
 	heap->data[0] = heap->data[heap->heap_len - 1];
 	heap->heap_len--;
@@ -159,7 +152,18 @@ void child_running(struct process *p){
     // died , p->ptr store end time
 }
 void exec_process(struct process *p){
+	// RR
+    if(policy == RR){
+        if(p->left_time > 500){
+            next_rr_time = now + 500;
+        }else{
+            next_rr_time = -1;
+        }
+		printf("exec_process: now=%d name=%s left_time=%d\n", now, p->name, p->left_time);
+    }
+	// PSJF
     current_p_start_time = now;
+
     if(p->pid==-1){ // the process haven't been forked
         // need to get the time process start running
         /* clock_gettime(CLOCK_REALTIME,&p->start); */

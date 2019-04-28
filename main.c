@@ -136,28 +136,6 @@ int main(int argc, char const *argv[])
             }
             // consider interrupt case
 
-#ifdef Z	
-
-			pid_t pid = fork();
-			// get start time
-			if(pid == 0){ // child
-				struct sched_param para;
-				sched_setscheduler(getpid(), SCHED_IDLE, &para);
-
-				printf("%s %d\n", task[current_task].p->name, getpid());
-				period(task[current_task].p->left_time);
-				// get end time
-				// send signal to parent
-				// mmap
-				exit(0);
-			}
-			// assign pid and counter to process, and throw the struct process P into heap
-            task[current_task].p->pid = pid;
-			task[current_task].p->counter = current_task;
-
-			heap_insert(task_heap, task[current_task].p);
-#endif
-
 			current_task++;
 		}
 
@@ -177,8 +155,9 @@ int main(int argc, char const *argv[])
 		}
 
 	}
+	// printf("out of while: cur_p=%s now=%d next_rr_time=%d\n", cur_p->name, now, next_rr_time);
 	// if policy is RR, then we might need to keep interrupt process
-	if(policy == RR && !isempty(task_heap)){
+	if(policy == RR && !isempty(task_heap)){ // if there are still some process need to run
 		if(next_rr_time==-1){
 			pause(); // wait until gets SIGCHLD
 		}else{
@@ -208,6 +187,7 @@ int main(int argc, char const *argv[])
 			pause(); // wait until gets SIGCHLD
 		}
 	}
+	
 	// wait child
     while(waitpid((pid_t)-1,NULL,0)>0){}
 #ifdef TIME
