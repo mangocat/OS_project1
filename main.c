@@ -17,7 +17,7 @@ int next_rr_time = -1; // = now + 500, or -1 when the left_time is less than 500
 long long main_counter = 0;
 int now = 0; // the current time unit
 int busy = 0;//1 means that a process is running
-// int done_num = 0; // indicates how many processes are done, only rr use it
+int done_num = 0; // indicates how many processes are done, only rr use it
 struct process* cur_p=NULL;// the process which is running
 int current_p_start_time; // when the current process is started, only PSJF need this
 heap_t *task_heap;
@@ -40,7 +40,7 @@ void handle_sigchld(int sig) {
     }
     while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {}
     errno = saved_errno;
-	// done_num++;
+	done_num++;
 }
 int main(int argc, char const *argv[])
 {
@@ -103,7 +103,7 @@ int main(int argc, char const *argv[])
 
 	int next_ready_time;
 
-
+if(policy!=RR){
 	while(current_task<n){
 
 		// rr
@@ -154,9 +154,48 @@ int main(int argc, char const *argv[])
 		}
 
 	}
+}else{ // RR
+	while(current_task<n || done_num<n){
+
+		while(current_task<n && task[current_task].ready_time == now){
+			// fork and mmap , a child can know where it is with current task
+			task[current_task].p->pid = -1;
+			task[current_task].p->counter = main_counter;
+            main_counter++;
+            clock_gettime(CLOCK_REALTIME,&task[current_task].p->start);
+			//insert(task_heap, task[current_task].p);
+
+			//heap_insert(task_heap, task[current_task].p);
+            // use sigpromask to avoid race condition, wait..... not needed
+            if(busy==1){
+                /* block_process(task[current_task].p); */
+			    heap_insert(task_heap, task[current_task].p);
+            }
+            else{
+                exec_process(task[current_task].p);
+                busy = 1;
+                cur_p = task[current_task].p;
+            }
+            // consider interrupt case
+			current_task++;
+		}
+
+		if(next_rr_time == now){ // only in RR, the next_rr_time will be number other than -1
+			// interrupt the current process and insert it to heap
+			interrupt(task_heap, cur_p); // change left_time and main_counter
+			cur_p = heap_extract_min(task_heap); // change next_rr_time
+			exec_process(cur_p);
+		}
+
+		// check once per unit
+		unit();
+		now++;
+
+	}
+}
 	// printf("out of while: cur_p=%s now=%d next_rr_time=%d\n", cur_p->name, now, next_rr_time);
 	// if policy is RR, then we might need to keep interrupt process
-	if(policy == RR && !isempty(task_heap)){ // if there are still some process need to run
+	/*if(policy == RR && !isempty(task_heap)){ // if there are still some process need to run
 		if(next_rr_time==-1){
 			period(cur_p->left_time - now); // wait until gets SIGCHLD
 		}else{
@@ -178,7 +217,7 @@ int main(int argc, char const *argv[])
 				exec_process(cur_p);
 			}
 		}
-	}else if(policy == PSJF && !isempty(task_heap)){
+	}else */if(policy == PSJF && !isempty(task_heap)){
 		pause(); // wait until gets SIGCHLD
 		while(!isempty(task_heap)){
 			cur_p = heap_extract_min(task_heap);

@@ -159,7 +159,7 @@ void exec_process(struct process *p){
         }else{
             next_rr_time = -1;
         }
-		printf("exec_process: now=%d name=%s left_time=%d\n", now, p->name, p->left_time);
+		// printf("exec_process: now=%d name=%s left_time=%d\n", now, p->name, p->left_time);
     }
 	// PSJF
     current_p_start_time = now;
