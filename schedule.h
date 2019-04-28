@@ -63,5 +63,6 @@ int psjf_pri(process_t *proc0, process_t *proc1);
 void interrupt(heap_t *heap, struct process *p);
 void exec_process(struct process *p);
 int block_process(struct process *p);
+int wakeup_process(struct process *p);
 int proc_assign_cpu(int pid, int core);
 #endif

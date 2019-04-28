@@ -49,6 +49,9 @@ int main(int argc, char const *argv[])
         exit(1);
     }
     proc_assign_cpu(getpid(),0);
+    process_t parent;
+    parent.pid = getpid();
+//    wakeup_process(&parent);
 	// determine policy type
 	char type[8];
 	scanf("%s", type);
@@ -159,8 +162,9 @@ int main(int argc, char const *argv[])
 #ifdef TIME
     for(int i=0; i<n; i++){
         int idx = order[i];
-        printf("%s start=%09ld.%09ld end=%09ld.%09ld\n",P[idx].name,P[idx].start.tv_sec,
-                P[idx].start.tv_nsec,P[idx].end.tv_sec,P[idx].end.tv_nsec);
+        printf("%s start=%09ld.%09ld end=%09ld.%09ld",P[idx].name,P[idx].start.tv_sec,
+                P[idx].start.tv_nsec,P[idx].ptr->tv_sec,P[idx].ptr->tv_nsec);
+        printf(" exec_time=%d\n",P[idx].exec_time);
     }
     
 #endif

@@ -95,39 +95,55 @@ int psjf_pri(process_t *proc0, process_t *proc1) {
 }
 
 int block_process(struct process *p){
-    struct sched_param para;
-    para.sched_priority = 0;
-    int ret = sched_setscheduler(p->pid,SCHED_IDLE,&para);
-    if(ret<0){
-        perror("sched_setscheduler with IDLE error!");
-        return -1;
-    }
-    return ret;
+    kill(p->pid,SIGUSR1);
+    /* struct sched_param para; */
+    /* para.sched_priority = 0; */
+    /* int ret = sched_setscheduler(p->pid,SCHED_IDLE,&para); */
+    /* if(ret<0){ */
+        /* perror("sched_setscheduler with IDLE error!"); */
+        /* return -1; */
+    /* } */
+    /* return ret; */
     
 }
 int wakeup_process(struct process *p){
-    struct sched_param para;
-    para.sched_priority = 0;
-    int ret = sched_setscheduler(p->pid,SCHED_OTHER,&para);
-    if(ret<0){
-        perror("sched_setscheduler with OTHER error!");
-        return -1;
-    }
-    return ret;
+    kill(p->pid,SIGUSR2);
+    /* struct sched_param para; */
+    /* para.sched_priority = 0; */
+    /* int ret = sched_setscheduler(p->pid,SCHED_OTHER,&para); */
+    /* if(ret<0){ */
+        /* perror("sched_setscheduler with OTHER error!"); */
+        /* return -1; */
+    /* } */
+    /* return ret; */
+}
+void sig_stop(int sig){
+    pause();
+}
+void sig_cont(int sig){
+    // nothing
+    puts("sig_cont");
 }
 void child_running(struct process *p){
+    struct sigaction stop,cont;
+    stop.sa_handler = sig_stop;
+    cont.sa_handler = sig_cont;
+    stop.sa_flags = cont.sa_flags = 0;
+    sigemptyset(&stop.sa_mask);
+    sigemptyset(&cont.sa_mask);
+    if(sigaction(SIGUSR1,&stop,NULL)<0){
+        perror("failed when sigaction SIGUSR1!");
+    }
+    if(sigaction(SIGUSR2,&cont,NULL)<0){
+        perror("failed when sigaction SIGUSR2!");
+    }
     period(p->left_time);
     clock_gettime(CLOCK_REALTIME,p->ptr);
+    printf("(in child)%s end=%09ld.%09ld\n",p->name,p->ptr->tv_sec,p->ptr->tv_nsec);
     /* kill(getppid(),SIGUSR1); */
     // died , p->ptr store end time
 }
 void exec_process(struct process *p){
-    /* static long long cnt=0; */
-    /* if(type[0]=='R'||type[0]=='F'){ */
-        /* p->counter = cnt; */
-    /* } */
-    /* cnt++; */
-
     if(p->pid==-1){ // the process haven't been forked
         // need to get the time process start running
         clock_gettime(CLOCK_REALTIME,&p->start);
