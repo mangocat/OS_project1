@@ -150,7 +150,7 @@ void child_running(struct process *p){
 void exec_process(struct process *p){
     if(p->pid==-1){ // the process haven't been forked
         // need to get the time process start running
-        clock_gettime(CLOCK_REALTIME,&p->start);
+        /* clock_gettime(CLOCK_REALTIME,&p->start); */
         p->ptr = (struct timespec*)mmap(NULL,sizeof(struct timespec),PROT_READ|PROT_WRITE,
                 MAP_SHARED|MAP_ANONYMOUS,-1,0);
         // p->ptr is used for record child end time in child process
