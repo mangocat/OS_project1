@@ -14,7 +14,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-extern int policy, now, next_rr_time;
+extern int policy, now, next_rr_time, current_p_start_time;
+extern int main_counter;
 
 heap_t *heap_create(int (*priority)(process_t *, process_t *)){
 	heap_t *heap = (heap_t *)malloc(sizeof(heap_t));
@@ -158,6 +159,7 @@ void child_running(struct process *p){
     // died , p->ptr store end time
 }
 void exec_process(struct process *p){
+    current_p_start_time = now;
     if(p->pid==-1){ // the process haven't been forked
         // need to get the time process start running
         /* clock_gettime(CLOCK_REALTIME,&p->start); */
@@ -182,8 +184,8 @@ void exec_process(struct process *p){
         }
         else{ // parent process
             p->pid=tmp;
-           proc_assign_cpu(p->pid,1);
-           wakeup_process(p); 
+            proc_assign_cpu(p->pid,1);
+            wakeup_process(p); 
         }
     }
     else{ //just set to high priority
@@ -195,7 +197,14 @@ void interrupt(heap_t *heap, struct process *p)
     if(block_process(p)<0){
         perror("interrupt error");
     }
+
     //remeber to change counter or left_time before insert
+    if(policy == PSJF){
+        p->left_time -= now - current_p_start_time;
+    }else if(policy == RR){
+        p->left_time -= 500;
+        p->counter = main_counter++;
+    }
 
     heap_insert(heap, p);
 

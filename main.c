@@ -14,9 +14,12 @@
 #define TIME
 int policy;
 int next_rr_time = -1; // = now + 500, or -1 when the left_time is less than 500
+long long main_counter = 0;
 int now = 0; // the current time unit
 int busy = 0;//1 means that a process is running
+// int done_num = 0; // indicates how many processes are done, only rr use it
 struct process* cur_p=NULL;// the process which is running
+int current_p_start_time; // when the current process is started, only PSJF need this
 heap_t *task_heap;
 int order[MAX_WAITING_NUM];
 void handle_sigchld(int sig) {
@@ -37,6 +40,7 @@ void handle_sigchld(int sig) {
     }
     while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {}
     errno = saved_errno;
+	// done_num++;
 }
 int main(int argc, char const *argv[])
 {
@@ -98,14 +102,17 @@ int main(int argc, char const *argv[])
 	int current_task = 0; // which task is waiting
 
 	int next_ready_time;
-    long long main_counter = 0;
+
 
 	while(current_task<n){
 
 		// rr
-		if(next_rr_time == now){
+		if(next_rr_time == now){ // only in RR, the next_rr_time will be number other than -1
 			// interrupt the current process and insert it to heap
-			
+			interrupt(task_heap, cur_p);
+			heap_insert(task_heap, cur_p);
+			cur_p = heap_extract_min(task_heap);
+			exec_process(cur_p);
 		}
 
 		while(current_task<n && task[current_task].ready_time == now){
@@ -170,6 +177,37 @@ int main(int argc, char const *argv[])
 		}
 
 	}
+	// if policy is RR, then we might need to keep interrupt process
+	if(policy == RR && !isempty(task_heap)){
+		if(next_rr_time==-1){
+			pause(); // wait until gets SIGCHLD
+		}else{
+			// let the current process run 500 units
+			period(next_rr_time - now);
+			// interrupt it
+			interrupt(task_heap, cur_p);
+			cur_p = heap_extract_min(task_heap);
+			exec_process(cur_p);
+		}
+		while(!isempty(task_heap)){
+			if(cur_p->left_time < 500){
+				pause(); // wait until gets SIGCHLD
+			}else{
+				period(500);
+				// interrupt it
+				interrupt(task_heap, cur_p);
+				cur_p = heap_extract_min(task_heap);
+				exec_process(cur_p);
+			}
+		}
+	}else if(policy == PSJF && !isempty(task_heap)){
+		pause(); // wait until gets SIGCHLD
+		while(!isempty(task_heap)){
+			cur_p = heap_extract_min(task_heap);
+			exec_process(cur_p);
+			pause(); // wait until gets SIGCHLD
+		}
+	}
 	// wait child
     while(waitpid((pid_t)-1,NULL,0)>0){}
 #ifdef TIME
@@ -179,7 +217,6 @@ int main(int argc, char const *argv[])
                 P[idx].start.tv_nsec,P[idx].ptr->tv_sec,P[idx].ptr->tv_nsec);
         printf(" exec_time=%d\n",P[idx].exec_time);
     }
-    
 #endif
 
 	return 0;
