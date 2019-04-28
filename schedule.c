@@ -141,7 +141,7 @@ void child_running(struct process *p){
     period(p->left_time);
     clock_gettime(CLOCK_REALTIME,p->ptr);
     printf("(in child)%s end=%09ld.%09ld\n",p->name,p->ptr->tv_sec,p->ptr->tv_nsec);
-    /* kill(getppid(),SIGUSR1); */
+    /* kill(getppid(),SIGPIPE); */
     // died , p->ptr store end time
 }
 void exec_process(struct process *p){
