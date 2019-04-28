@@ -109,9 +109,9 @@ int main(int argc, char const *argv[])
 		// rr
 		if(next_rr_time == now){ // only in RR, the next_rr_time will be number other than -1
 			// interrupt the current process and insert it to heap
-			interrupt(task_heap, cur_p);
+			interrupt(task_heap, cur_p); // change left_time and main_counter
 			heap_insert(task_heap, cur_p);
-			cur_p = heap_extract_min(task_heap);
+			cur_p = heap_extract_min(task_heap); // change next_rr_time
 			exec_process(cur_p);
 		}
 
