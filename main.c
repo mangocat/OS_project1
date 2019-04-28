@@ -33,7 +33,7 @@ void handle_sigchld(int sig) {
         busy = 0;
         cur_p = NULL;
     }
-    /* while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {} */
+    while (waitpid((pid_t)(-1), NULL, WNOHANG) > 0) {}
     errno = saved_errno;
 }
 int main(int argc, char const *argv[])
