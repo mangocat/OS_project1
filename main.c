@@ -51,7 +51,7 @@ int main(int argc, char const *argv[])
     proc_assign_cpu(getpid(),0);
     process_t parent;
     parent.pid = getpid();
-//    wakeup_process(&parent);
+    wakeup_process(&parent);
 	// determine policy type
 	char type[8];
 	scanf("%s", type);

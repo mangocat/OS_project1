@@ -95,29 +95,30 @@ int psjf_pri(process_t *proc0, process_t *proc1) {
 }
 
 int block_process(struct process *p){
-    kill(p->pid,SIGUSR1);
-    /* struct sched_param para; */
-    /* para.sched_priority = 0; */
-    /* int ret = sched_setscheduler(p->pid,SCHED_IDLE,&para); */
-    /* if(ret<0){ */
-        /* perror("sched_setscheduler with IDLE error!"); */
-        /* return -1; */
-    /* } */
-    /* return ret; */
+    /* kill(p->pid,SIGUSR1); */
+    struct sched_param para;
+    para.sched_priority = 0;
+    int ret = sched_setscheduler(p->pid,SCHED_IDLE,&para);
+    if(ret<0){
+        perror("sched_setscheduler with IDLE error!");
+        return -1;
+    }
+    return ret;
     
 }
 int wakeup_process(struct process *p){
-    kill(p->pid,SIGUSR2);
-    /* struct sched_param para; */
-    /* para.sched_priority = 0; */
-    /* int ret = sched_setscheduler(p->pid,SCHED_OTHER,&para); */
-    /* if(ret<0){ */
-        /* perror("sched_setscheduler with OTHER error!"); */
-        /* return -1; */
-    /* } */
-    /* return ret; */
+    /* kill(p->pid,SIGUSR2); */
+    struct sched_param para;
+    para.sched_priority = 0;
+    int ret = sched_setscheduler(p->pid,SCHED_OTHER,&para);
+    if(ret<0){
+        perror("sched_setscheduler with OTHER error!");
+        return -1;
+    }
+    return ret;
 }
 void sig_stop(int sig){
+    puts("HI");
     pause();
 }
 void sig_cont(int sig){
@@ -125,6 +126,7 @@ void sig_cont(int sig){
     puts("sig_cont");
 }
 void child_running(struct process *p){
+#ifdef SIGNAL
     struct sigaction stop,cont;
     stop.sa_handler = sig_stop;
     cont.sa_handler = sig_cont;
@@ -138,6 +140,7 @@ void child_running(struct process *p){
         perror("failed when sigaction SIGUSR2!");
     }
     sigprocmask(SIG_SETMASK,0,NULL);
+#endif
     period(p->left_time);
     clock_gettime(CLOCK_REALTIME,p->ptr);
     printf("(in child)%s end=%09ld.%09ld\n",p->name,p->ptr->tv_sec,p->ptr->tv_nsec);
@@ -151,21 +154,24 @@ void exec_process(struct process *p){
         p->ptr = (struct timespec*)mmap(NULL,sizeof(struct timespec),PROT_READ|PROT_WRITE,
                 MAP_SHARED|MAP_ANONYMOUS,-1,0);
         // p->ptr is used for record child end time in child process
+#ifdef SIGNAL
         sigset_t new,old;
         sigemptyset(&new);
         sigaddset(&new,SIGUSR1);
         sigaddset(&new,SIGUSR2);
         sigprocmask(SIG_BLOCK,&new,&old);
-        p->pid = fork();
-        if(p->pid<0){
+#endif
+        pid_t tmp = fork();
+        if(tmp<0){
             perror("Failed when fork()!");
         }
-        else if(p->pid==0){
+        else if(tmp==0){
             // child process
             child_running(p);
             exit(0);
         }
         else{ // parent process
+            p->pid=tmp;
            proc_assign_cpu(p->pid,1);
            wakeup_process(p); 
         }
