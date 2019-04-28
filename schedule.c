@@ -14,6 +14,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+extern int policy, now, next_rr_time;
+
 heap_t *heap_create(int (*priority)(process_t *, process_t *)){
 	heap_t *heap = (heap_t *)malloc(sizeof(heap_t));
 	assert(heap != NULL);
@@ -45,6 +47,14 @@ void heap_insert(heap_t *heap, process_t *process) {
 process_t *heap_extract_min(heap_t *heap) {
 	assert(heap->heap_len != 0);
 	process_t *data = heap->data[0];
+
+    if(policy == RR){
+        if(data->left_time < 500){
+            next_rr_time = now + 500;
+        }else{
+            next_rr_time = -1;
+        }
+    }
 
 	heap->data[0] = heap->data[heap->heap_len - 1];
 	heap->heap_len--;

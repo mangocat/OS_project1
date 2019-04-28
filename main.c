@@ -13,6 +13,8 @@
 #include <sys/wait.h>
 #define TIME
 int policy;
+int next_rr_time = -1; // = now + 500, or -1 when the left_time is less than 500
+int now = 0; // the current time unit
 int busy = 0;//1 means that a process is running
 struct process* cur_p=NULL;// the process which is running
 heap_t *task_heap;
@@ -94,11 +96,17 @@ int main(int argc, char const *argv[])
 
 	// run!
 	int current_task = 0; // which task is waiting
-	int now = 0; // the current time unit
+
 	int next_ready_time;
     long long main_counter = 0;
 
 	while(current_task<n){
+
+		// rr
+		if(next_rr_time == now){
+			// interrupt the current process and insert it to heap
+			
+		}
 
 		while(current_task<n && task[current_task].ready_time == now){
 			// fork and mmap , a child can know where it is with current task
@@ -147,6 +155,10 @@ int main(int argc, char const *argv[])
 
 		if(current_task==n){ // then there is nothing need to fork
 			break;
+		}else if(policy == RR){
+			// check once per unit
+			unit();
+			now++;
 		}else{
 			// detemine next ready time
 			next_ready_time = task[current_task].ready_time - now;
