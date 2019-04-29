@@ -129,7 +129,7 @@ if(policy!=RR){
 			current_task++;
 		}
 		// if not running process, run the min process
-		if(busy==0){
+		if(busy==0 && !isempty(task_heap)){
 			cur_p = heap_extract_min(task_heap);
 			exec_process(cur_p);
 			busy = 1;
