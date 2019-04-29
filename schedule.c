@@ -92,7 +92,10 @@ int rr_pri(process_t *proc0, process_t *proc1) {
     return proc1->counter - proc0->counter;
 }
 int sjf_pri(process_t *proc0, process_t *proc1) {
+    if(proc1->exec_time - proc0->exec_time != 0)
 	return proc1->exec_time - proc0->exec_time;
+    else
+	return proc1->counter - proc0->counter;
 }
 int psjf_pri(process_t *proc0, process_t *proc1) {
 	return proc1->left_time - proc0->left_time;
