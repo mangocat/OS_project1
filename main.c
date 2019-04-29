@@ -106,14 +106,6 @@ int main(int argc, char const *argv[])
 if(policy!=RR){
 	while(current_task<n){
 
-		// rr
-		if(next_rr_time == now){ // only in RR, the next_rr_time will be number other than -1
-			// interrupt the current process and insert it to heap
-			interrupt(task_heap, cur_p); // change left_time and main_counter
-			cur_p = heap_extract_min(task_heap); // change next_rr_time
-			exec_process(cur_p);
-		}
-
 		while(current_task<n && task[current_task].ready_time == now){
 			// fork and mmap , a child can know where it is with current task
 			task[current_task].p->pid = -1;
@@ -124,26 +116,27 @@ if(policy!=RR){
 
 			//heap_insert(task_heap, task[current_task].p);
             // use sigpromask to avoid race condition, wait..... not needed
-            if(busy==1){
-                /* block_process(task[current_task].p); */
+            // if(busy==1){
+            //     /* block_process(task[current_task].p); */
 			    heap_insert(task_heap, task[current_task].p);
-            }
-            else{
-                exec_process(task[current_task].p);
-                busy = 1;
-                cur_p = task[current_task].p;
-            }
+            // }else{
+            //     exec_process(task[current_task].p);
+            //     busy = 1;
+            //     cur_p = task[current_task].p;
+            // }
             // consider interrupt case
 
 			current_task++;
 		}
+		// if not running process, run the min process
+		if(busy==0){
+			cur_p = heap_extract_min(task_heap);
+			exec_process(cur_p);
+			busy = 1;
+		}
 
 		if(current_task==n){ // then there is nothing need to fork
 			break;
-		}else if(policy == RR){
-			// check once per unit
-			unit();
-			now++;
 		}else{
 			// detemine next ready time
 			next_ready_time = task[current_task].ready_time - now;
