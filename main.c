@@ -33,7 +33,7 @@ void handle_sigchld(int sig) {
     cur_p->end = *(cur_p->ptr);
     //run next process, now busy==1
     if(isempty(task_heap)==0){// is not empty
-          cur_p = heap_extract_min(task_heap); 
+          cur_p = heap_extract_min(task_heap);
           exec_process(cur_p);
     }
     else{
@@ -200,18 +200,8 @@ if(policy == FIFO || policy == SJF){
 			exec_process(cur_p);
 			busy = 1;
 		}
-
-		if(current_task==n){ // then there is nothing need to fork
-			break;
-		}else{
-			// detemine next ready time
-			next_ready_time = task[current_task].ready_time - now;
-			// wait until the next for time
-			period(next_ready_time);
-			// renew now
-			now = task[current_task].ready_time;
-		}
-
+		unit();
+		now++;
 	}
 }
 	
