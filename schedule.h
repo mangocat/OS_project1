@@ -64,5 +64,6 @@ void interrupt(heap_t *heap, struct process *p);
 void exec_process(struct process *p);
 int block_process(struct process *p);
 int wakeup_process(struct process *p);
-int proc_assign_cpu(int pid, int core);
+int assign_cpu_process(int pid, int core);
+
 #endif

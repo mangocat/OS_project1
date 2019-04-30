@@ -15,7 +15,7 @@
 #include <fcntl.h>
 
 extern int policy, now, next_rr_time, current_p_start_time;
-extern int main_counter;
+extern long long main_counter;
 
 heap_t *heap_create(int (*priority)(process_t *, process_t *)){
 	heap_t *heap = (heap_t *)malloc(sizeof(heap_t));
@@ -83,12 +83,11 @@ process_t *heap_peek(heap_t *heap) {
 int isempty(heap_t *heap) {
 	return heap->heap_len == 0;
 }
+
 int fifo_pri(process_t *proc0, process_t *proc1) {
-	/* return proc0->ready_time - proc1->ready_time; */
     return proc1->counter - proc0->counter;
 }
 int rr_pri(process_t *proc0, process_t *proc1) {
-	/* return proc1->exec_count - proc0->exec_count; */
     return proc1->counter - proc0->counter;
 }
 int sjf_pri(process_t *proc0, process_t *proc1) {
@@ -102,7 +101,6 @@ int psjf_pri(process_t *proc0, process_t *proc1) {
 }
 
 int block_process(struct process *p){
-    /* kill(p->pid,SIGUSR1); */
     struct sched_param para;
     para.sched_priority = 0;
     int ret = sched_setscheduler(p->pid,SCHED_IDLE,&para);
@@ -113,8 +111,8 @@ int block_process(struct process *p){
     return ret;
     
 }
+
 int wakeup_process(struct process *p){
-    /* kill(p->pid,SIGUSR2); */
     struct sched_param para;
     para.sched_priority = 0;
     int ret = sched_setscheduler(p->pid,SCHED_OTHER,&para);
@@ -124,36 +122,14 @@ int wakeup_process(struct process *p){
     }
     return ret;
 }
-void sig_stop(int sig){
-    puts("HI");
-    pause();
-}
-void sig_cont(int sig){
-    // nothing
-    puts("sig_cont");
-}
+
 void child_running(struct process *p){
-#ifdef SIGNAL
-    struct sigaction stop,cont;
-    stop.sa_handler = sig_stop;
-    cont.sa_handler = sig_cont;
-    stop.sa_flags = cont.sa_flags = 0;
-    sigemptyset(&stop.sa_mask);
-    sigemptyset(&cont.sa_mask);
-    if(sigaction(SIGUSR1,&stop,NULL)<0){
-        perror("failed when sigaction SIGUSR1!");
-    }
-    if(sigaction(SIGUSR2,&cont,NULL)<0){
-        perror("failed when sigaction SIGUSR2!");
-    }
-    sigprocmask(SIG_SETMASK,0,NULL);
-#endif
     period(p->left_time);
     clock_gettime(CLOCK_REALTIME,p->ptr);
-    printf("(in child)%s end=%09ld.%09ld\n",p->name,p->ptr->tv_sec,p->ptr->tv_nsec);
-    /* kill(getppid(),SIGPIPE); */
+    // printf("(in child)%s end=%09ld.%09ld\n",p->name,p->ptr->tv_sec,p->ptr->tv_nsec);
     // died , p->ptr store end time
 }
+
 void exec_process(struct process *p){
 	// RR
     if(policy == RR){
@@ -169,17 +145,10 @@ void exec_process(struct process *p){
 
     if(p->pid==-1){ // the process haven't been forked
         // need to get the time process start running
-        /* clock_gettime(CLOCK_REALTIME,&p->start); */
         p->ptr = (struct timespec*)mmap(NULL,sizeof(struct timespec),PROT_READ|PROT_WRITE,
                 MAP_SHARED|MAP_ANONYMOUS,-1,0);
         // p->ptr is used for record child end time in child process
-#ifdef SIGNAL
-        sigset_t new,old;
-        sigemptyset(&new);
-        sigaddset(&new,SIGUSR1);
-        sigaddset(&new,SIGUSR2);
-        sigprocmask(SIG_BLOCK,&new,&old);
-#endif
+        
         pid_t tmp = fork();
         if(tmp<0){
             perror("Failed when fork()!");
@@ -191,7 +160,7 @@ void exec_process(struct process *p){
         }
         else{ // parent process
             p->pid=tmp;
-            proc_assign_cpu(p->pid,1);
+            assign_cpu_process(p->pid,1);
             wakeup_process(p); 
         }
     }
@@ -199,6 +168,26 @@ void exec_process(struct process *p){
         wakeup_process(p);
     }
 }
+
+int assign_cpu_process(pid_t pid, int core)
+{
+	if (core > sizeof(cpu_set_t)) {
+		fprintf(stderr, "Core index error.");
+		return -1;
+	}
+
+	cpu_set_t mask;
+	CPU_ZERO(&mask);
+	CPU_SET(core, &mask);
+
+	if (sched_setaffinity(pid, sizeof(mask), &mask) < 0) {
+		perror("Setaffinity Failed:");
+		exit(1);
+	}
+
+	return 0;
+}
+
 void interrupt(heap_t *heap, struct process *p)
 {
     if(block_process(p)<0){
@@ -217,21 +206,4 @@ void interrupt(heap_t *heap, struct process *p)
 
     return;
 }
-int proc_assign_cpu(int pid, int core)
-{
-	if (core > sizeof(cpu_set_t)) {
-		fprintf(stderr, "Core index error.");
-		return -1;
-	}
 
-	cpu_set_t mask;
-	CPU_ZERO(&mask);
-	CPU_SET(core, &mask);
-
-	if (sched_setaffinity(pid, sizeof(mask), &mask) < 0) {
-		perror("sched_setaffinity");
-		exit(1);
-	}
-
-	return 0;
-}

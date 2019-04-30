@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <sys/wait.h>
 #define TIME
+
 int policy;
 int next_rr_time = -1; // = now + 500, or -1 when the left_time is less than 500
 long long main_counter = 0;
@@ -22,6 +23,7 @@ struct process* cur_p=NULL;// the process which is running
 int current_p_start_time; // when the current process is started, only PSJF need this
 heap_t *task_heap;
 int order[MAX_WAITING_NUM];
+
 void handle_sigchld(int sig) {
     int saved_errno = errno;
     static int cnt = 0;
@@ -42,6 +44,7 @@ void handle_sigchld(int sig) {
     errno = saved_errno;
 	done_num++;
 }
+
 int main(int argc, char const *argv[])
 {
     struct sigaction sa;
@@ -50,15 +53,15 @@ int main(int argc, char const *argv[])
     sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
     /* sa.sa_flags = 0; */
     if (sigaction(SIGCHLD, &sa, 0) == -1) {
-    /* if (sigaction(SIGUSR1, &sa, 0) == -1) { */
         perror(0);
         exit(1);
     }
-    proc_assign_cpu(getpid(),0);
+    assign_cpu_process(getpid(),0);
     process_t parent;
     parent.pid = getpid();
     wakeup_process(&parent);
-	// determine policy type
+	
+    // determine policy type
 	char type[8];
 	scanf("%s", type);
 	if(type[0]=='F'){ // FIFO
@@ -112,18 +115,8 @@ if(policy == FIFO || policy == SJF){
 			task[current_task].p->counter = main_counter;
             main_counter++;
             clock_gettime(CLOCK_REALTIME,&task[current_task].p->start);
-			//insert(task_heap, task[current_task].p);
 
-			//heap_insert(task_heap, task[current_task].p);
-            // use sigpromask to avoid race condition, wait..... not needed
-            // if(busy==1){
-            //     /* block_process(task[current_task].p); */
 			heap_insert(task_heap, task[current_task].p);
-            // }else{
-            //     exec_process(task[current_task].p);
-            //     busy = 1;
-            //     cur_p = task[current_task].p;
-            // }
             // consider interrupt case
 
 			current_task++;
@@ -156,12 +149,9 @@ if(policy == FIFO || policy == SJF){
 			task[current_task].p->counter = main_counter;
             main_counter++;
             clock_gettime(CLOCK_REALTIME,&task[current_task].p->start);
-			//insert(task_heap, task[current_task].p);
 
-			//heap_insert(task_heap, task[current_task].p);
             // use sigpromask to avoid race condition, wait..... not needed
             if(busy==1){
-                /* block_process(task[current_task].p); */
 			    heap_insert(task_heap, task[current_task].p);
             }
             else{
@@ -196,8 +186,8 @@ if(policy == FIFO || policy == SJF){
 			// fork and mmap , a child can know where it is with current task
 			task[current_task].p->pid = -1;
 			task[current_task].p->counter = main_counter;
-            main_counter++;
-            clock_gettime(CLOCK_REALTIME,&task[current_task].p->start);
+            		main_counter++;
+            		clock_gettime(CLOCK_REALTIME,&task[current_task].p->start);
 		
 			heap_insert(task_heap, task[current_task].p);
 
@@ -224,42 +214,10 @@ if(policy == FIFO || policy == SJF){
 
 	}
 }
-	// printf("out of while: cur_p=%s now=%d next_rr_time=%d\n", cur_p->name, now, next_rr_time);
-	// if policy is RR, then we might need to keep interrupt process
-	/*if(policy == RR && !isempty(task_heap)){ // if there are still some process need to run
-		if(next_rr_time==-1){
-			period(cur_p->left_time - now); // wait until gets SIGCHLD
-		}else{
-			// let the current process run 500 units
-			period(next_rr_time - now);
-			// interrupt it
-			interrupt(task_heap, cur_p);
-			cur_p = heap_extract_min(task_heap);
-			exec_process(cur_p);
-		}
-		while(!isempty(task_heap)){
-			if(cur_p->left_time <= 500){
-				period(cur_p->left_time); // wait until gets SIGCHLD
-			}else{
-				period(500);
-				// interrupt it
-				interrupt(task_heap, cur_p);
-				cur_p = heap_extract_min(task_heap);
-				exec_process(cur_p);
-			}
-		}
-	}else */
-	/*if(policy == PSJF && !isempty(task_heap)){
-		pause(); // wait until gets SIGCHLD
-		while(!isempty(task_heap)){
-			cur_p = heap_extract_min(task_heap);
-			exec_process(cur_p);
-			pause(); // wait until gets SIGCHLD
-		}
-	}*/
 	
 	// wait child
     while(waitpid((pid_t)-1,NULL,0)>0){}
+
 #ifdef TIME
     for(int i=0; i<n; i++){
         int idx = order[i];
