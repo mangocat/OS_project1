@@ -192,3 +192,15 @@ P4 74702
 
 ## 各組員的貢獻
 
+劉育嘉：signal handler, first in first out, shortest job first, compile kernel
+
+林立：round robin, preemprive shortest job first
+
+何承勳：min heap(priority queue)
+
+游高政：testing sample inputs, create sample output shell script and file, compile kernel
+
+黃柏豪：fork process
+
+徐琮彥：kernel files, compile kernel
+
