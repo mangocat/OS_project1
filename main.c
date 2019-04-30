@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <sys/wait.h>
-#define TIME
+#include <sys/syscall.h>
 
 int policy;
 int next_rr_time = -1; // = now + 500, or -1 when the left_time is less than 500
@@ -208,17 +208,16 @@ if(policy == FIFO || policy == SJF){
 	// wait child
     while(waitpid((pid_t)-1,NULL,0)>0){}
 
-#ifdef TIME
     for(int i=0; i<n; i++){
         int idx = order[i];
         printf("%s %d\n", P[idx].name, P[idx].pid);
-	/*
-	printf("%s %d start=%09ld.%09ld end=%09ld.%09ld",P[idx].name,P[idx].pid,P[idx].start.tv_sec,
+		syscall(335, P[idx].pid, P[idx].start, P[idx].end);
+		/*
+		printf("%s %d start=%09ld.%09ld end=%09ld.%09ld",P[idx].name,P[idx].pid,P[idx].start.tv_sec,
                 P[idx].start.tv_nsec,P[idx].ptr->tv_sec,P[idx].ptr->tv_nsec);
         printf(" exec_time=%d\n",P[idx].exec_time);
     	*/
     }
-#endif
 
 	return 0;
 }
