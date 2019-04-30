@@ -24,7 +24,7 @@ heap_t *task_heap;
 int order[MAX_WAITING_NUM];
 void handle_sigchld(int sig) {
     int saved_errno = errno;
-    static int cnt = 0; 
+    static int cnt = 0;
     printf("cnt=%d %s\n",cnt,cur_p->name);
     order[cnt] = cur_p->id;
     cnt++;
@@ -103,7 +103,7 @@ int main(int argc, char const *argv[])
 
 	int next_ready_time;
 
-if(policy!=RR){
+if(policy == FIFO || policy == SJF){
 	while(current_task<n){
 
 		while(current_task<n && task[current_task].ready_time == now){
@@ -118,7 +118,7 @@ if(policy!=RR){
             // use sigpromask to avoid race condition, wait..... not needed
             // if(busy==1){
             //     /* block_process(task[current_task].p); */
-			    heap_insert(task_heap, task[current_task].p);
+			heap_insert(task_heap, task[current_task].p);
             // }else{
             //     exec_process(task[current_task].p);
             //     busy = 1;
@@ -147,7 +147,7 @@ if(policy!=RR){
 		}
 
 	}
-}else{ // RR
+}else if(policy == RR){ // RR
 	while(current_task<n || done_num<n){
 
 		while(current_task<n && task[current_task].ready_time == now){
@@ -185,6 +185,44 @@ if(policy!=RR){
 		now++;
 
 	}
+}else{ // psjf
+	while(current_task<n){
+
+		if(busy==1){
+			interrupt(task_heap, cur_p);
+		}
+
+		while(current_task<n && task[current_task].ready_time == now){
+			// fork and mmap , a child can know where it is with current task
+			task[current_task].p->pid = -1;
+			task[current_task].p->counter = main_counter;
+            main_counter++;
+            clock_gettime(CLOCK_REALTIME,&task[current_task].p->start);
+		
+			heap_insert(task_heap, task[current_task].p);
+
+			current_task++;
+		}
+
+		// if not running process, run the min process
+		if(!isempty(task_heap)){
+			cur_p = heap_extract_min(task_heap);
+			exec_process(cur_p);
+			busy = 1;
+		}
+
+		if(current_task==n){ // then there is nothing need to fork
+			break;
+		}else{
+			// detemine next ready time
+			next_ready_time = task[current_task].ready_time - now;
+			// wait until the next for time
+			period(next_ready_time);
+			// renew now
+			now = task[current_task].ready_time;
+		}
+
+	}
 }
 	// printf("out of while: cur_p=%s now=%d next_rr_time=%d\n", cur_p->name, now, next_rr_time);
 	// if policy is RR, then we might need to keep interrupt process
@@ -210,14 +248,15 @@ if(policy!=RR){
 				exec_process(cur_p);
 			}
 		}
-	}else */if(policy == PSJF && !isempty(task_heap)){
+	}else */
+	/*if(policy == PSJF && !isempty(task_heap)){
 		pause(); // wait until gets SIGCHLD
 		while(!isempty(task_heap)){
 			cur_p = heap_extract_min(task_heap);
 			exec_process(cur_p);
 			pause(); // wait until gets SIGCHLD
 		}
-	}
+	}*/
 	
 	// wait child
     while(waitpid((pid_t)-1,NULL,0)>0){}
