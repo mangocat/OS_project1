@@ -196,7 +196,7 @@ void interrupt(heap_t *heap, struct process *p)
 
     //remeber to change counter or left_time before insert
     if(policy == PSJF){
-        p->left_time -= now - current_p_start_time;
+        p->left_time -= (now - current_p_start_time);
     }else if(policy == RR){
         p->left_time -= 500;
         p->counter = main_counter++;
