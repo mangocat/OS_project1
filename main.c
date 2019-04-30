@@ -27,7 +27,7 @@ int order[MAX_WAITING_NUM];
 void handle_sigchld(int sig) {
     int saved_errno = errno;
     static int cnt = 0;
-    printf("cnt=%d %s\n",cnt,cur_p->name);
+    //printf("cnt=%d %s\n",cnt,cur_p->name);
     order[cnt] = cur_p->id;
     cnt++;
     cur_p->end = *(cur_p->ptr);
@@ -211,9 +211,12 @@ if(policy == FIFO || policy == SJF){
 #ifdef TIME
     for(int i=0; i<n; i++){
         int idx = order[i];
-        printf("%s start=%09ld.%09ld end=%09ld.%09ld",P[idx].name,P[idx].start.tv_sec,
+        printf("%s %d\n", P[idx].name, P[idx].pid);
+	/*
+	printf("%s %d start=%09ld.%09ld end=%09ld.%09ld",P[idx].name,P[idx].pid,P[idx].start.tv_sec,
                 P[idx].start.tv_nsec,P[idx].ptr->tv_sec,P[idx].ptr->tv_nsec);
         printf(" exec_time=%d\n",P[idx].exec_time);
+    	*/
     }
 #endif
 
