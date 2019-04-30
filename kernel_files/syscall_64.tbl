@@ -343,7 +343,10 @@
 332	common	statx			__x64_sys_statx
 333	common	io_pgetevents		__x64_sys_io_pgetevents
 334	common	rseq			__x64_sys_rseq
-335 common	printklog		__x64_sys_printklog
+335 common	printklog_0		__x64_sys_printklog_0
+336 common	printklog_1		__x64_sys_printklog_1
+337 common	printklog_2		__x64_sys_printklog_2
+338 common	printklog_3		__x64_sys_printklog_3
 
 #
 # x32-specific system call numbers start at 512 to avoid cache impact

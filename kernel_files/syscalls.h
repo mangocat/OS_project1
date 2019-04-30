@@ -593,7 +593,10 @@ asmlinkage long sys_clock_nanosleep(clockid_t which_clock, int flags,
 /* kernel/printk.c */
 asmlinkage long sys_syslog(int type, char __user *buf, int len);
 
-asmlinkage long sys_printklog(int, struct timespec, struct timespec);
+asmlinkage long sys_printklog_0(int, struct timespec, struct timespec);
+asmlinkage long sys_printklog_1(int);
+asmlinkage long sys_printklog_2(int, int, int, int, int);
+asmlinkage long sys_printklog_3(int, long, long, long, long);
 
 /* kernel/ptrace.c */
 asmlinkage long sys_ptrace(long request, long pid, unsigned long addr,
