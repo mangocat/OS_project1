@@ -194,7 +194,7 @@ P4 74702
 
 劉育嘉：signal handler, first in first out, shortest job first, compile kernel
 
-林立：round robin, preemprive shortest job first
+林立：round robin, preemptive shortest job first
 
 何承勳：min heap(priority queue)
 
