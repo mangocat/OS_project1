@@ -1,11 +1,11 @@
 #include <linux/kernel.h>
-#include <linux/time.h>
+#include <linux/ktime.h>
 #include <linux/syscalls.h>
 #include <linux/linkage.h>
 
-SYSCALL_DEFINE3(printklog_0, int, pid, struct timespec, stime, struct timespec, ftime)
+SYSCALL_DEFINE3(printklog_0, int, pid, struct __kernel_timespec __user *, stp, struct __kernel_timespec __user *, ftp)
 {
-	printk("[Project1] %d %09ld.%09ld %09ld.%09ld\n", pid, stime.tv_sec, stime.tv_nsec, ftime.tv_sec, ftime.tv_nsec);
+	printk("[Project1] %d %09ld.%09ld %09ld.%09ld\n", pid, stp->tv_sec, stp->tv_nsec, ftp->tv_sec, ftp->tv_nsec);
 	return 0;
 }
 
