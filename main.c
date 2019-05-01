@@ -211,7 +211,7 @@ if(policy == FIFO || policy == SJF){
     for(int i=0; i<n; i++){
         int idx = order[i];
         printf("%s %d\n", P[idx].name, P[idx].pid);
-		syscall(335, P[idx].pid, P[idx].start, P[idx].end);
+		syscall(335, P[idx].pid, &(P[idx].start), &(P[idx].end));
 		/*
 		printf("%s %d start=%09ld.%09ld end=%09ld.%09ld",P[idx].name,P[idx].pid,P[idx].start.tv_sec,
                 P[idx].start.tv_nsec,P[idx].ptr->tv_sec,P[idx].ptr->tv_nsec);
